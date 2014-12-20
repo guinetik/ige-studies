@@ -1,5 +1,11 @@
 #ige
-ige_prototype
+ige
+
+#OS Stuff
+*.DS_Store
+
+#IDE stuff
+*.idea
 
 # Logs
 logs
