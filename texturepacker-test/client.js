@@ -26,32 +26,32 @@ var Client = IgeClass.extend({
                     frank.mount(scene);
 
 					var apple = new IgeEntity();
-					apple.texture(fruits).cellById("apple.png");
+					apple.texture(fruits).cellById("apple.png").dimensionsFromCell();
 					apple.translateTo(100, 10, 10);
 					apple.mount(scene);
 
 					var banana = new IgeEntity();
-					banana.texture(fruits).cellById("banana.png");
+					banana.texture(fruits).cellById("banana.png").dimensionsFromCell();
 					banana.translateTo(200, 10, 10);
 					banana.mount(scene);
 
 					var cherry = new IgeEntity();
-					cherry.texture(fruits).cellById("cherry.png");
+					cherry.texture(fruits).cellById("cherry.png").dimensionsFromCell();
 					cherry.translateTo(100, 100, 10);
 					cherry.mount(scene);
 
 					var prune = new IgeEntity();
-					prune.texture(fruits).cellById("prune.png");
+					prune.texture(fruits).cellById("prune.png").dimensionsFromCell();
 					prune.translateTo(200, 100, 10);
 					prune.mount(scene);
 
 					var strawberry = new IgeEntity();
-					strawberry.texture(fruits).cellById("strawberry.png");
+					strawberry.texture(fruits).cellById("strawberry.png").dimensionsFromCell();
 					strawberry.translateTo(-100, 100, 10);
 					strawberry.mount(scene);
 
 					var tomato = new IgeEntity();
-					tomato.texture(fruits).cellById("tomato.png");
+					tomato.texture(fruits).cellById("tomato.png").dimensionsFromCell();
 					tomato.translateTo(0, 100, 10);
 					tomato.mount(scene);
 				}
