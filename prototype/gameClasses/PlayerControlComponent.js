@@ -24,6 +24,7 @@ var PlayerControlComponent = IgeEntity.extend({
         this._entity.addBehaviour('playerControlComponent_behaviour', this.move);
     },
     move: function (ctx) {
+        var self = this;
         if (!ige.isServer) {
             if (ige.input.actionState('left')) {
                 if (!this.playerControl.controls.left) {
@@ -96,6 +97,52 @@ var PlayerControlComponent = IgeEntity.extend({
             if (this._dead) {
                 return;
             }
+            //shooting
+            if (this.playerControl.controls.shoot && this._shoot === 'off' && this._currentMagicPoints >= this._MAX_MAGIC_POINTS) {
+                var x = this.worldPosition().x;
+                var y = this.worldPosition().y;
+                var vx = 0, vy = 0;
+
+                this.applyMagicPointDamage(this._MAX_MAGIC_POINTS+1);
+                this._shoot = 'on';
+                switch (this._facing) {
+                    case 'up':
+                        vy = -1;
+                        break;
+                    case 'down':
+                        vy = 1;
+                        break;
+                    case 'left':
+                        vx = -1;
+                        break;
+                    case 'right':
+                        vx = 1;
+                        break;
+                    case 'upLeft':
+                        vx = -1;
+                        vy = -1;
+                        break;
+                    case 'downLeft':
+                        vx = -1;
+                        vy = 1;
+                        break;
+                    case 'upRight':
+                        vx = 1;
+                        vy = -1;
+                        break;
+                    case 'downRight':
+                        vx = 1;
+                        vy = 1;
+                        break;
+                    default:
+                        return;
+                        break;
+                }
+                ige.server.beamParticleFactory(this._playerClass, this._facing, new IgePoint(x, y, 0), new IgePoint(vx, vy, 0));
+            }
+            else {
+                this._shoot = 'off';
+            }
             //movement
             if (this._canMove) {
                 var facing = '', facing_prefix = '', facing_postfix = '';
@@ -105,7 +152,6 @@ var PlayerControlComponent = IgeEntity.extend({
                 var restVelocityY = 0;
                 var velocityX = 0;
                 var velocityY = 0;
-
                 speed = this.playerControl._speed;
 
                 if (this.playerControl.controls.up) {
@@ -148,52 +194,6 @@ var PlayerControlComponent = IgeEntity.extend({
                 if (facing !== '') {
                     this._facing = facing;
                 }
-            }
-            //shooting
-            if (this.playerControl.controls.shoot && this._currentMagicPoints > 0) {
-                var x = this.worldPosition().x;
-                var y = this.worldPosition().y;
-                var vx = 0, vy = 0;
-
-                this.applyMagicPointDamage(1);
-                this._shoot = 'on';
-                switch (this._facing) {
-                    case 'up':
-                        vy = -1;
-                        break;
-                    case 'down':
-                        vy = 1;
-                        break;
-                    case 'left':
-                        vx = -1;
-                        break;
-                    case 'right':
-                        vx = 1;
-                        break;
-                    case 'upLeft':
-                        vx = -1;
-                        vy = -1;
-                        break;
-                    case 'downLeft':
-                        vx = -1;
-                        vy = 1;
-                        break;
-                    case 'upRight':
-                        vx = 1;
-                        vy = -1;
-                        break;
-                    case 'downRight':
-                        vx = 1;
-                        vy = 1;
-                        break;
-                    default:
-                        return;
-                        break;
-                }
-                ige.server.beamParticleFactory(this._playerClass, this._facing, new IgePoint(x, y, 0), new IgePoint(vx, vy, 0));
-            }
-            else {
-                this._shoot = 'off';
             }
         }
         /* CEXCLUDE */

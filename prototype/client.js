@@ -77,7 +77,7 @@ var Client = IgeClass
             ige.on('texturesLoaded', function () {
                 ige.start(function (success) {
                     if (success) {
-                        ClientSound.musicLoadInterval = new IgeInterval()
+                        /*ClientSound.musicLoadInterval = new IgeInterval()
                             .init(function () {
                                 if (!ClientSound.musicLoadIntervalPlaying
                                     && ClientSound.status.music) {
@@ -90,7 +90,7 @@ var Client = IgeClass
                                 else if (ClientSound.musicLoadIntervalPlaying) {
                                     this.cancel();
                                 }
-                            }, 1000);
+                            }, 1000);*/
 
                         // Start the networking.
                         ige.network.start('http://localhost:1337', function () {
@@ -116,7 +116,6 @@ var Client = IgeClass
 
                             self.textureMap1 = new IgeTextureMap().depth(0).tileWidth(32).tileHeight(32).translateTo(-384, -384, 0).mount(self.backgroundScene);
                             var texIndex = self.textureMap1.addTexture(self.textures.room);
-                            // Paint the map tiles.
                             for (var x = 0; x < 24; ++x) {
                                 for (var y = 0; y < 24; ++y) {
                                     self.textureMap1.paintTile(x, y, texIndex, (y * 24 + x) + 1);
@@ -132,7 +131,6 @@ var Client = IgeClass
                                 .textLineSpacing(0)
                                 .translateTo(window.innerWidth / 2 - 100, -window.innerHeight / 2 + 100, 0)
                                 .mount(self.uiScene);
-
                             ige.network.send('playerEntity', {
                                 playerName: self._validPlayerName
                             });
@@ -145,11 +143,31 @@ var Client = IgeClass
             this.textures = {
                 room: new IgeCellSheet('./assets/textures/rooms/room_B_768x768.png', 24, 24),
                 /*mageSprites: new IgeCellSheet('./assets/textures/sprites/mage_sprite_sheet.png', 12, 16),*/
-                mageSprites: new TexturePackerAtlas('Characters','./../sprites/characters.png','./../../sprites/characters.js'),
-                beamParticle: new IgeTexture('./assets/textures/shapes/BeamParticle.js'),
+                mageSprites: new TexturePackerAtlas('Characters','./assets/textures/sprites/characters.png','./../assets/textures/sprites/characters.js'),
+                beamParticle: new IgeTexture('./assets/textures/sprites/ShotAZU.png'),
                 attributeBox: new IgeTexture('./assets/textures/shapes/AttributeBox.js'),
                 deathParticle: new IgeTexture('./assets/textures/shapes/DeathParticle.js')
             };
+            this.loadDiedScreen = _loadDiedScreen;
+        },
+        _loadDiedScreen: function () {
+            var self = this;
+            var deadScreen = document.createElement('DIV');
+            deadScreen.id = 'deadScreen';
+            deadScreen.style.cssText = 'position:absolute;left: 37.5%;top: 25%;width: 410px;height: 410px;margin-left: -35px; margin-top: -35px;background-color:#eee;';
+
+            var logo = document.createElement('IMG');
+            logo.id = 'logo';
+            logo.src = 'assets/images/logo.jpg';
+            logo.style.cssText = 'margin:0 auto;width:410px;';
+
+            deadScreen.appendChild(logo);
+            var labelPlayerName = document.createElement('P');
+            labelPlayerName.id = 'labelPlayerName';
+            labelPlayerName.style.cssText = 'font-family:Arial, Helvetica, sans-serif;margin-left:10px;';
+            labelPlayerName.innerHTML = '<b>You Died!</b>';
+            deadScreen.appendChild(labelPlayerName);
+            document.body.appendChild(deadScreen);
         }
     });
 

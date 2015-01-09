@@ -6,6 +6,7 @@ var Server = IgeClass
             ige.timeScale(1);
             this.players = {};
             this.playerClasses = {};
+            //this.availableClasses = ['zapper'];
             this.availableClasses = ['cop', 'marine', 'robot', 'zapper'];
             this.walls = {};
             this.implement(ServerNetworkEvents);
@@ -110,7 +111,7 @@ var Server = IgeClass
             return new Player(clientId, playerClass, playerName).mount(scene);
         },
         beamParticleFactory: function (type, facing, pos, vel) {
-            new BeamParticle(type, facing).translateTo(pos.x, pos.y, pos.z).velocity.x(vel.x).velocity.y(vel.y).lifeSpan(3000).mount(this.foregroundScene);
+            new BeamParticle(type, facing).translateTo(pos.x, pos.y, pos.z).velocity.x(vel.x/2).velocity.y(vel.y/2).lifeSpan(3000).mount(this.foregroundScene);
         },
         wallFactory: function (id, pos, width, height, scene) {
             return new Wall(id, pos, width, height).mount(scene);
