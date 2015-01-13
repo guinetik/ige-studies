@@ -25,15 +25,31 @@ var BeamParticle = IgeEntityBox2d.extend({
       }).streamMode(1);
     }
     /* CEXCLUDE */
-
-    if(!ige.isServer) {
-      self.texture(ige.client.textures.beamParticle);
-    }
     this.category('BeamParticle');
     this._beamType = beamType;
     this._direction = direction;
     this._inPlayer = true;
     this.streamSections(['transform', 'beamType', 'direction']);
+  },
+  update:function(ctx) {
+    if(!ige.isServer) {
+      console.log("BEAMTYPE", this._beamType);
+      switch (this._beamType) {
+        case 'cop':
+          this.texture(ige.client.textures.shot_blue);
+          break;
+        case 'marine':
+          this.texture(ige.client.textures.shot_purple);
+          break;
+        case 'robot':
+          this.texture(ige.client.textures.shot_red);
+          break;
+        case 'zapper':
+          this.texture(ige.client.textures.shot_yellow);
+          break;
+      }
+    }
+    IgeEntityBox2d.prototype.update.call(this, ctx);
   },
   streamSectionData: function(sectionId, data) {
     if(sectionId === 'beamType') {

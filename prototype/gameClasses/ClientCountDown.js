@@ -10,8 +10,8 @@ var ClientCountDown = IgeFontEntity.extend({
 		this._interval = interval || 1000;
 
 		this.depth(1)
-			.width(300).height(30).textAlignX(1)
-			.colorOverlay('#ffffff').nativeFont('20pt Arial')
+			.width(350).height(30).textAlignX(1)
+			.colorOverlay('#FF0000').nativeFont('30pt Arial')
 			.nativeStroke(1).nativeStrokeColor('#666666')
 			.textAlignX(1)
 			.textLineSpacing(0)

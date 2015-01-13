@@ -146,7 +146,10 @@ var Client = IgeClass
                 mageSprites: new TexturePackerAtlas('Characters','./assets/textures/sprites/characters.png','./../assets/textures/sprites/characters.js'),
                 beamParticle: new IgeTexture('./assets/textures/sprites/shot_blue.png'),
                 crown: new IgeTexture('./assets/textures/sprites/crown.png'),
-                idle_blue: new IgeTexture('./assets/textures/sprites/idle_blue.png'),
+                shot_blue: new IgeTexture('./assets/textures/sprites/shot_blue.png'),
+                shot_purple: new IgeTexture('./assets/textures/sprites/shot_purple.png'),
+                shot_red: new IgeTexture('./assets/textures/sprites/shot_red.png'),
+                shot_yellow: new IgeTexture('./assets/textures/sprites/shot_yellow.png'),
                 attributeBox: new IgeTexture('./assets/textures/shapes/AttributeBox.js'),
                 deathParticle: new IgeTexture('./assets/textures/shapes/DeathParticle.js')
             };

@@ -37,8 +37,8 @@ var Crown = IgeEntityBox2d.extend({
     startCrownCountdown: function () {
         var self = this;
         this.countdown = new ClientCountDown(this._inPlayer + ' will Win in ', 10, 's', 1000)
-            .translateTo(10, -100, 1000)
-            .mount(ige.client.foregroundScene)
+            .translateTo(0, -300, 1000)
+            .mount(ige.client.mainScene)
             .start();
         this.countdown.on('complete', function () {
             self.countdown.destroy();
