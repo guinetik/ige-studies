@@ -97,7 +97,7 @@ var Server = IgeClass
                         self.addComponent(EntityContactResolver);
                         ige.box2d.contactListener(self.contactResolver.begin, self.contactResolver.end, self.contactResolver.preSolver);
 
-                        self.crown = self.crownFactory(100, 100, 1);
+                        self.crown = self.crownFactory();
                     }
                 });
             });
@@ -115,10 +115,14 @@ var Server = IgeClass
             return new Player(clientId, playerClass, playerName).mount(scene);
         },
         beamParticleFactory: function (type, facing, pos, vel) {
-            new BeamParticle(type, facing).translateTo(pos.x, pos.y, pos.z).velocity.x(vel.x / 2).velocity.y(vel.y / 2).lifeSpan(3000).mount(this.foregroundScene);
+            var speed = 0.5;
+            new BeamParticle(type, facing).translateTo(pos.x, pos.y, pos.z).velocity.x(vel.x * speed).velocity.y(vel.y * speed).lifeSpan(3000).mount(this.foregroundScene);
         },
-        crownFactory: function (posX, posY, posZ) {
-            return new Crown().translateTo(posX, posY, posZ).mount(this.foregroundScene);
+        crownFactory: function () {
+            console.log("CROWN FACTORY");
+            var x = Math.floor(Math.random() * 600) - 300;
+            var y = Math.floor(Math.random() * 600) - 300;
+            return new Crown().translateTo(x, y, 1000).mount(this.foregroundScene);
         },
         wallFactory: function (id, pos, width, height, scene) {
             return new Wall(id, pos, width, height).mount(scene);

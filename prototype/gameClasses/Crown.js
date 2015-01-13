@@ -16,8 +16,8 @@ var Crown = IgeEntityBox2d.extend({
                 gravitic: true,
                 fixedRotation: false,
                 fixtures: [{
-                    density: 0.3,
-                    friction: 0.1,
+                    density: 0.1,
+                    friction: 0,
                     restitution: 0.1,
                     shape: {
                         type: 'circle'
@@ -42,13 +42,12 @@ var Crown = IgeEntityBox2d.extend({
             .start();
         this.countdown.on('complete', function () {
             self.countdown.destroy();
-            self.destroy();
+            self._inPlayer = 'n';
         });
     },
     reset:function() {
       console.log("CROWN RESET");
         this._inPlayer = 'n';
-        this.player = null;
     },
     update: function (ctx) {
         if (!ige.isServer) {
@@ -61,7 +60,6 @@ var Crown = IgeEntityBox2d.extend({
                     this.countdown.stop();
                     this.countdown.destroy();
                     this.countdown = null;
-                    this.destroy();
                 }
             }
         }
@@ -77,14 +75,17 @@ var Crown = IgeEntityBox2d.extend({
                     this.translateTo(playerX + 2, playerY - 30, 10000);
                 } else if (this.player._facing == "left") {
                     this.translateTo(playerX + 38, playerY + 2, 10000);
-                }
-                if (this.player._facing == "right") {
+                } else if (this.player._facing == "right") {
                     this.translateTo(playerX - 30, playerY, 10000);
                 }
             } else {
-                this.player = null;
-                this._inPlayer = 'n';
-                this.box2dActive(true);
+                if(this.player != null) {
+                    this.destroy();
+                    ige.server.crownFactory();
+                } else {
+                    this._inPlayer = 'n';
+                    this.box2dActive(true);
+                }
             }
         }
         IgeEntityBox2d.prototype.update.call(this, ctx);

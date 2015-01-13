@@ -153,7 +153,6 @@ var Client = IgeClass
                 attributeBox: new IgeTexture('./assets/textures/shapes/AttributeBox.js'),
                 deathParticle: new IgeTexture('./assets/textures/shapes/DeathParticle.js')
             };
-            this.loadDiedScreen = _loadDiedScreen;
         },
         _loadDiedScreen: function () {
             var self = this;

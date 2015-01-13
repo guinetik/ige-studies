@@ -21,19 +21,19 @@ var ClientNetworkEvents = {
     },
     _onPostScores: function (scores) {
         var list = [];
-        if (scores['air']) {
-            list.push(scores['air']);
+        if (scores['cop']) {
+            list.push(scores['cop']);
         }
 
-        if (scores['earth']) {
-            list.push(scores['earth']);
+        if (scores['marine']) {
+            list.push(scores['marine']);
         }
 
-        if (scores['fire']) {
-            list.push(scores['fire']);
+        if (scores['robot']) {
+            list.push(scores['robot']);
         }
-        if (scores['water']) {
-            list.push(scores['water']);
+        if (scores['zapper']) {
+            list.push(scores['zapper']);
         }
         list.sort(function (a, b) {
             var x = parseInt(a.kills);

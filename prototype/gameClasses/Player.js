@@ -336,8 +336,8 @@ var Player = IgeEntityBox2d
         },
         destroy: function () {
             this._destroyUi();
-            if(ige.isServer) {
-                if(ige.server.crown._inPlayer == this._playerClass) {
+            if (ige.isServer) {
+                if (ige.server.crown._inPlayer == this._playerClass) {
                     ige.server.crown.reset();
                 }
             }
@@ -499,7 +499,6 @@ var Player = IgeEntityBox2d
                         this.animation.start('shoot_up', this._shootingCallback);
                     } else {
                         this.animation.select('walk_up');
-
                     }
                 } else {
                     if (this._shoot === 'on') {

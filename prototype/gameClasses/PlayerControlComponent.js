@@ -1,5 +1,5 @@
 var PlayerControlComponent = IgeEntity.extend({
-    classId: 'PlayerControlComponent',
+    classId: 'PlayerContrsolComponent',
     componentId: 'playerControl',
     init: function (entity) {
         var self = this;
