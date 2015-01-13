@@ -16,7 +16,7 @@ var Player = IgeEntityBox2d
                     gravitic: true,
                     fixedRotation: false,
                     fixtures: [{
-                        density: 1.0,
+                        density: 1.4,
                         friction: 0.8,
                         restitution: 0.4,
                         shape: {
@@ -28,13 +28,12 @@ var Player = IgeEntityBox2d
                     if (self._currentMagicPoints < self._MAX_MAGIC_POINTS) {
                         self.applyMagicPointDamage(-1);
                     }
-                }, 1000);
+                }, 500);
                 self._deathInterval = new IgeInterval();
             }
             /* CEXCLUDE */
             if (!ige.isServer) {
                 self.addComponent(IgeAnimationComponent).depth(1);
-                self.texture(ige.client.textures.mageSprites).dimensionsFromCell();
                 self.addComponent(PlayerControlComponent);
 
                 //ui
@@ -44,20 +43,6 @@ var Player = IgeEntityBox2d
                     .colorOverlay('#ffffff').nativeFont('12pt Arial')
                     .nativeStroke(1).nativeStrokeColor('#666666')
                     .textLineSpacing(0).bindData(self, '_playerName', '', '');
-
-                /*self._currentHitPointsAttributeBox = new AttributeBox()
-                 .id(self.id() + 'currentHitPointsAttributeBox')
-                 .depth(-1000).width(50).height(5)
-                 .colorOverlay('#ff0000').bindData(self,
-                 '_currentHitPoints',
-                 '_MAX_HIT_POINTS');
-
-                 self._currentMagicPointsAttributeBox = new AttributeBox()
-                 .id(self.id() + 'currentMagicPointsAttributeBox')
-                 .depth(-1000).width(50).height(5)
-                 .colorOverlay('#0000ff').bindData(self,
-                 '_currentMagicPoints',
-                 '_MAX_MAGIC_POINTS');*/
 
                 self._deathParticleEmitter = new IgeParticleEmitter()
                     .id(self.id() + 'deathParticleEmitter')
@@ -76,26 +61,6 @@ var Player = IgeEntityBox2d
                     .deathScaleBaseY(0.7).deathRotateBase(0)
                     .deathRotateVariance(-360, 360).deathOpacityBase(0.0)
                     .depth(1).width(10).height(10);
-
-                /*self._currentHitPointsFontEntity = new IgeFontEntity()
-                 .id(self.id() + 'currentHitPointsFontEntity')
-                 .depth(-1000).width(100).height(35).textAlignX(1)
-                 .colorOverlay('#ff0000').nativeFont('12pt Arial')
-                 .nativeStroke(1).nativeStrokeColor('#000000')
-                 .textLineSpacing(0).bindData(self,
-                 '_currentHitPoints',
-                 '',
-                 ' HP');*/
-
-                /*self._currentMagicPointsFontEntity = new IgeFontEntity()
-                 .id(self.id() + 'currentMagicPointsFontEntity').depth(1)
-                 .width(100).height(35).textAlignX(1)
-                 .colorOverlay('#0000ff').nativeFont('12pt Arial')
-                 .nativeStroke(1).nativeStrokeColor('#000000')
-                 .textLineSpacing(0).bindData(self,
-                 '_currentMagicPoints',
-                 '',
-                 ' MP');*/
 
                 self._killsFontEntity = new IgeFontEntity()
                     .id(self.id() + 'killsFontEntity').depth(1).width(100)
@@ -128,7 +93,8 @@ var Player = IgeEntityBox2d
             this._canMove = true;
             this._dead = false;
             this._lastDamageType = '';
-            this._shootingAnimation = false;
+            this._canChangeSkin = true;
+            this.texturesInited = false;
             this.streamSections(['transform', 'facing', 'shoot', 'playerClass', 'playerName', 'currentHitPoints', 'currentMagicPoints', 'kills', 'deaths']);
         },
         streamSectionData: function (sectionId, data) {
@@ -225,30 +191,60 @@ var Player = IgeEntityBox2d
         },
         applyMagicPointDamage: function (value) {
             this._currentMagicPoints = this._currentMagicPoints - value;
+            if (this._currentMagicPoints > this._MAX_MAGIC_POINTS) {
+                this._currentMagicPoints = this._MAX_MAGIC_POINTS;
+            }
         },
         setPlayerClass: function (type) {
             switch (type) {
                 case 'cop':
+                    this.texture(ige.client.textures.mageSprites).cellById('blue_walk_DOWN_0000.png').dimensionsFromCell();
                     this._defineCopAnimations();
                     this._playerNameFontEntity.colorOverlay('#ffffff');
                     break;
                 case 'marine':
+                    this.texture(ige.client.textures.mageSprites).cellById('purple_walk_DOWN_0000.png').dimensionsFromCell();
                     this._defineMarineAnimations();
                     this._playerNameFontEntity.colorOverlay('#964b00');
                     break;
                 case 'robot':
+                    this.texture(ige.client.textures.mageSprites).cellById('red_walk_DOWN_0000.png').dimensionsFromCell();
                     this._defineRobotAnimations();
                     this._playerNameFontEntity.colorOverlay('#ff0000');
                     break;
                 case 'zapper':
+                    this.texture(ige.client.textures.mageSprites).cellById('yellow_walk_DOWN_0000.png').dimensionsFromCell();
                     this._defineZapperAnimations();
                     this._playerNameFontEntity.colorOverlay('#0000ff');
                     break;
             }
             this._playerClass = type;
+            this.texturesInited = true;
         },
         update: function (ctx) {
             var self = this;
+            /* CEXCLUDE */
+            if (!ige.isServer) {
+                //set player class
+                if (!this.texturesInited) this.setPlayerClass(this._playerClass);
+                this._updateUiPositions();
+                // Test for death.
+                if (this._currentHitPoints <= 0) {
+                    this._dead = true;
+                    this._canChangeSkin = true;
+                    this._deathParticleEmitter.start();
+                    if (this.id() === ige.client.playerEntityId) {
+                        //ige.client._loadDiedScreen();
+                    }
+                } else {
+                    this._dead = false;
+                    self._deathParticleEmitter.stopAndKill();
+                }
+                // Set the current animation based on direction.
+                this._setAnimation();
+                this.depth(this._translate.y);
+                this._lastTranslate = this._translate.clone();
+            }
             /* CEXCLUDE */
             if (ige.isServer) {
                 if (!this._dead && this._currentHitPoints <= 0) {
@@ -291,27 +287,49 @@ var Player = IgeEntityBox2d
                             break;
                     }
                 }
-            }
-            /* CEXCLUDE */
-            if (!ige.isServer) {
-                //set player class
-                this.setPlayerClass(this._playerClass);
-                this._updateUiPositions();
-                // Test for death.
-                if (this._currentHitPoints <= 0) {
-                    this._dead = true;
-                    this._deathParticleEmitter.start();
-                    if (this.id() === ige.client.playerEntityId) {
-                        ige.client._loadDiedScreen();
-                    }
-                } else {
-                    this._dead = false;
-                    self._deathParticleEmitter.stopAndKill();
+                if (this._shoot === 'on' && this._currentMagicPoints == this._MAX_MAGIC_POINTS) {
+                    setTimeout(function () {
+                        var x = self.worldPosition().x;
+                        var y = self.worldPosition().y;
+
+                        var vx = 0, vy = 0;
+                        self.applyMagicPointDamage(self._MAX_MAGIC_POINTS + 1);
+                        switch (self._facing) {
+                            case 'up':
+                                vy = -1;
+                                break;
+                            case 'down':
+                                vy = 1;
+                                break;
+                            case 'left':
+                                vx = -1;
+                                break;
+                            case 'right':
+                                vx = 1;
+                                break;
+                            case 'upLeft':
+                                vx = -1;
+                                vy = -1;
+                                break;
+                            case 'downLeft':
+                                vx = -1;
+                                vy = 1;
+                                break;
+                            case 'upRight':
+                                vx = 1;
+                                vy = -1;
+                                break;
+                            case 'downRight':
+                                vx = 1;
+                                vy = 1;
+                                break;
+                            default:
+                                return;
+                                break;
+                        }
+                        ige.server.beamParticleFactory(self._playerClass, self._facing, new IgePoint(x, y, 0), new IgePoint(vx, vy, 0));
+                    }, 30);
                 }
-                // Set the current animation based on direction.
-                this._setAnimation();
-                this.depth(this._translate.y);
-                this._lastTranslate = this._translate.clone();
             }
             IgeEntityBox2d.prototype.update.call(this, ctx);
         },
@@ -325,25 +343,12 @@ var Player = IgeEntityBox2d
 
             this._deathParticleEmitter.translateTo(playerX, playerY, 0);
 
-            //var mpAttrBoxX = playerX;
-            //var mpAttrBoxY = playerY - this.height() / 2;
-
-            //var hpAttrBoxX = playerX;
-            //var hpAttrBoxY = mpAttrBoxY - this._currentMagicPointsAttributeBox.height();
-
             var playerNameX = playerX;
             var playerNameY = playerY - 10;
-            //var playerNameY = hpAttrBoxY - this._currentHitPointsAttributeBox.height();
-
-            /*this._currentMagicPointsAttributeBox.translateTo(mpAttrBoxX, mpAttrBoxY, 0);
-             this._currentHitPointsAttributeBox.translateTo(hpAttrBoxX, hpAttrBoxY, 0);*/
             this._playerNameFontEntity.translateTo(playerNameX, playerNameY, 0);
 
             var statusBoxX = -window.innerWidth / 2 + 35;
             var statusBoxY = window.innerHeight / 2 - 35;
-
-            /*this._currentHitPointsFontEntity.translateTo(statusBoxX, statusBoxY, 0);
-             this._currentMagicPointsFontEntity.translateTo(statusBoxX + this._currentHitPointsFontEntity.width(), statusBoxY, 0);*/
 
             this._killsFontEntity.translateTo(0, statusBoxY, 0);
             this._deathsFontEntity.translateTo(this._killsFontEntity.translate().x() + this._killsFontEntity.width(), statusBoxY, 0);
@@ -351,13 +356,7 @@ var Player = IgeEntityBox2d
         _destroyUi: function () {
             if (!ige.isServer) {
                 this._playerNameFontEntity.destroy();
-                /*this._currentHitPointsAttributeBox.destroy();
-                 this._currentMagicPointsAttributeBox.destroy();*/
-
                 this._deathParticleEmitter.destroy();
-
-                //this._currentHitPointsFontEntity.destroy();
-                //this._currentMagicPointsFontEntity.destroy();
                 this._killsFontEntity.destroy();
                 this._deathsFontEntity.destroy();
             }
@@ -395,104 +394,115 @@ var Player = IgeEntityBox2d
             }
         },
         _defineCopAnimations: function () {
-            this.animation.define("shoot_down", [22, 1, 2, 3, 4, 5], 12, -1);
-            this.animation.define("shoot_left", [25, 6, 7, 8, 9, 10], 12, -1);
-            this.animation.define("shoot_right", [28, 11, 12, 13, 14, 15], 12, -1);
-            this.animation.define("shoot_up", [31, 16, 17, 18, 19, 20], 12, -1);
-            this.animation.define("walk_down", [21, 22, 23, 22], 8, -1);
-            this.animation.define("walk_left", [24, 25, 26, 25], 8, -1);
-            this.animation.define("walk_right", [27, 28, 29, 28], 8, -1);
-            this.animation.define("walk_up", [30, 31, 32, 31], 8, -1);
+            this.animation.define("shoot_down", [22, 1, 2, 3, 4, 5], 16, -1);
+            this.animation.define("shoot_left", [25, 6, 7, 8, 9, 10], 16, -1);
+            this.animation.define("shoot_right", [28, 11, 12, 13, 14, 15], 16, -1);
+            this.animation.define("shoot_up", [31, 16, 17, 18, 19, 20], 16, -1);
+            this.animation.define("walk_down", [21, 22, 23, 22], 5, -1);
+            this.animation.define("walk_left", [24, 25, 26, 25], 5, -1);
+            this.animation.define("walk_right", [27, 28, 29, 28], 5, -1);
+            this.animation.define("walk_up", [30, 31, 32, 31], 5, -1);
         },
         _defineMarineAnimations: function () {
-            this.animation.define("shoot_down", [54, 33, 34, 35, 36, 37], 12, -1);
-            this.animation.define("shoot_left", [57, 38, 39, 40, 41, 42], 12, -1);
-            this.animation.define("shoot_right", [60, 43, 44, 45, 46, 47], 12, -1);
-            this.animation.define("shoot_up", [63, 48, 49, 50, 51, 52], 12, -1);
-            this.animation.define("walk_down", [53, 54, 55, 54], 8, -1);
-            this.animation.define("walk_left", [56, 57, 58, 57], 8, -1);
-            this.animation.define("walk_right", [59, 60, 61, 60], 8, -1);
-            this.animation.define("walk_up", [62, 63, 64, 63], 8, -1);
+            this.animation.define("shoot_down", [54, 33, 34, 35, 36, 37], 16, -1);
+            this.animation.define("shoot_left", [57, 38, 39, 40, 41, 42], 16, -1);
+            this.animation.define("shoot_right", [60, 43, 44, 45, 46, 47], 16, -1);
+            this.animation.define("shoot_up", [63, 48, 49, 50, 51, 52], 16, -1);
+            this.animation.define("walk_down", [53, 54, 55, 54], 5, -1);
+            this.animation.define("walk_left", [56, 57, 58, 57], 5, -1);
+            this.animation.define("walk_right", [59, 60, 61, 60], 5, -1);
+            this.animation.define("walk_up", [62, 63, 64, 63], 5, -1);
         },
         _defineRobotAnimations: function () {
-            this.animation.define("shoot_down", [85, 65, 66, 67, 68, 69], 12, -1);
-            this.animation.define("shoot_left", [88, 70, 71, 72, 73], 12, -1);
-            this.animation.define("shoot_right", [91, 74, 75, 76, 77, 78], 12, -1);
-            this.animation.define("shoot_up", [94, 79, 80, 81, 82, 83], 12, -1);
-            this.animation.define("walk_down", [84, 85, 86, 85], 8, -1);
-            this.animation.define("walk_left", [87, 88, 89, 88], 8, -1);
-            this.animation.define("walk_right", [90, 91, 92, 91], 8, -1);
-            this.animation.define("walk_up", [93, 94, 95, 94], 8, -1);
+            this.animation.define("shoot_down", [85, 65, 66, 67, 68, 69], 16, -1);
+            this.animation.define("shoot_left", [88, 70, 71, 72, 73], 16, -1);
+            this.animation.define("shoot_right", [91, 74, 75, 76, 77, 78], 16, -1);
+            this.animation.define("shoot_up", [94, 79, 80, 81, 82, 83], 16, -1);
+            this.animation.define("walk_down", [84, 85, 86, 85], 5, -1);
+            this.animation.define("walk_left", [87, 88, 89, 88], 5, -1);
+            this.animation.define("walk_right", [90, 91, 92, 91], 5, -1);
+            this.animation.define("walk_up", [93, 94, 95, 94], 5, -1);
         },
         _defineZapperAnimations: function () {
-            this.animation.define("shoot_down", [116, 96, 97, 98, 99, 100], 12, -1);
-            this.animation.define("shoot_left", [119, 101, 102, 103, 104], 12, -1);
-            this.animation.define("shoot_right", [122, 105, 106, 107, 108, 109], 12, -1);
-            this.animation.define("shoot_up", [125, 110, 111, 112, 113, 114], 12, -1);
-            this.animation.define("walk_down", [115, 116, 117, 116], 8, -1);
-            this.animation.define("walk_left", [118, 119, 120, 119], 8, -1);
-            this.animation.define("walk_right", [121, 122, 123, 122], 8, -1);
-            this.animation.define("walk_up", [124, 125, 126, 125], 8, -1);
+            this.animation.define("shoot_down", [116, 96, 97, 98, 99, 100], 16, -1);
+            this.animation.define("shoot_left", [119, 101, 102, 103, 104], 16, -1);
+            this.animation.define("shoot_right", [122, 105, 106, 107, 108, 109], 16, -1);
+            this.animation.define("shoot_up", [125, 110, 111, 112, 113, 114], 16, -1);
+            this.animation.define("walk_down", [115, 116, 117, 116], 5, -1);
+            this.animation.define("walk_left", [118, 119, 120, 119], 5, -1);
+            this.animation.define("walk_right", [121, 122, 123, 122], 5, -1);
+            this.animation.define("walk_up", [124, 125, 126, 125], 5, -1);
         },
         _setDeathAnimation: function () {
             //this.animation.select('death');
         },
         _shootingCallback: {
             onLoop: function (anim) {
-                this._entity._shootingAnimation = false;
+                this._entity._canChangeSkin = true;
+                this.stop();
             }
         },
         _setStationaryAnimation: function () {
-            if (this._shoot === 'on') {
-                if (this._facing == "up") {
-                    this.animation.select('shoot_up', this._shootingCallback);
-                } else if (this._facing == "down") {
-                    this.animation.select('shoot_down', this._shootingCallback);
-                } else if (this._facing == "left") {
-                    this.animation.select('shoot_left', this._shootingCallback);
-                } else if (this._facing == "right") {
-                    this.animation.select('shoot_right', this._shootingCallback);
+            if (this._canChangeSkin) {
+                if (this._shoot === 'on') {
+                    this.animation.stop();
+                    this._canChangeSkin = false;
+                    if (this._facing == "up") {
+                        this.animation.start('shoot_up', this._shootingCallback);
+                    } else if (this._facing == "down") {
+                        this.animation.start('shoot_down', this._shootingCallback);
+                    } else if (this._facing == "left") {
+                        this.animation.start('shoot_left', this._shootingCallback);
+                    } else if (this._facing == "right") {
+                        this.animation.start('shoot_right', this._shootingCallback);
+                    }
+                } else {
+                    this.animation.stop();
                 }
-                this._shootingAnimation = true;
-            } else {
-                if(!this._shootingAnimation) this.animation.stop();
             }
         },
         _setHorizontalAnimation: function (distX) {
             // Moving left.
-            if (distX < 0) {
-                if (this._shoot === 'on') {
-                    this._shootingAnimation = true;
-                    this.animation.select('shoot_left', this._shootingCallback);
-                }
-                else {
-                    if (!this._shootingAnimation) this.animation.select('walk_left');
-                }
-            } else {
-                // Moving right.
-                if (this._shoot === 'on') {
-                    this._shootingAnimation = true;
-                    this.animation.select('shoot_right', this._shootingCallback);
-                }
-                else {
-                    if (!this._shootingAnimation) this.animation.select('walk_right');
+            if (this._canChangeSkin) {
+                if (distX < 0) {
+                    if (this._shoot === 'on') {
+                        this._canChangeSkin = false;
+                        this.animation.start('shoot_left', this._shootingCallback);
+                    }
+                    else {
+                        this.animation.select('walk_left');
+                    }
+                } else {
+                    // Moving right.
+                    if (this._shoot === 'on') {
+                        this._canChangeSkin = false;
+                        this.animation.start('shoot_right', this._shootingCallback);
+                    }
+                    else {
+
+                        this.animation.select('walk_right');
+                    }
                 }
             }
         },
         _setVerticalAnimation: function (distY) {
-            if (distY < 0) {
-                if (this._shoot === 'on') {
-                    this._shootingAnimation = true;
-                    this.animation.select('shoot_up', this._shootingCallback);
+            if (this._canChangeSkin) {
+                if (distY < 0) {
+                    if (this._shoot === 'on') {
+                        this._canChangeSkin = false;
+                        this.animation.start('shoot_up', this._shootingCallback);
+                    } else {
+                        this.animation.select('walk_up');
+
+                    }
                 } else {
-                    if (!this._shootingAnimation) this.animation.select('walk_up');
-                }
-            } else {
-                if (this._shoot === 'on') {
-                    this._shootingAnimation = true;
-                    this.animation.select('shoot_down', this._shootingCallback);
-                } else {
-                    if (!this._shootingAnimation) this.animation.select('walk_down');
+                    if (this._shoot === 'on') {
+                        this._canChangeSkin = false;
+                        this.animation.start('shoot_down', this._shootingCallback);
+                    } else {
+                        this.animation.select('walk_down')
+                    }
+                    ;
                 }
             }
         },
@@ -500,30 +510,30 @@ var Player = IgeEntityBox2d
             if (distX < 0) {
                 if (distY < 0) {
                     if (this._shoot === 'on') {
-                        this.animation.select('shoot');
+
                     } else {
-                        this.animation.select('walk');
+
                     }
                 } else {
                     if (this._shoot === 'on') {
-                        this.animation.select('shoot');
+
                     }
                     else {
-                        this.animation.select('walk');
+
                     }
                 }
             } else {
                 if (distY < 0) {
                     if (this._shoot === 'on') {
-                        this.animation.select('shoot');
+
                     } else {
-                        this.animation.select('walk');
+
                     }
                 } else {
                     if (this._shoot === 'on') {
-                        this.animation.select('shoot');
+
                     } else {
-                        this.animation.select('walk');
+
                     }
                 }
             }

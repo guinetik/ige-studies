@@ -144,7 +144,9 @@ var Client = IgeClass
                 room: new IgeCellSheet('./assets/textures/rooms/room_B_768x768.png', 24, 24),
                 /*mageSprites: new IgeCellSheet('./assets/textures/sprites/mage_sprite_sheet.png', 12, 16),*/
                 mageSprites: new TexturePackerAtlas('Characters','./assets/textures/sprites/characters.png','./../assets/textures/sprites/characters.js'),
-                beamParticle: new IgeTexture('./assets/textures/sprites/ShotAZU.png'),
+                beamParticle: new IgeTexture('./assets/textures/sprites/shot_blue.png'),
+                crown: new IgeTexture('./assets/textures/sprites/crown.png'),
+                idle_blue: new IgeTexture('./assets/textures/sprites/idle_blue.png'),
                 attributeBox: new IgeTexture('./assets/textures/shapes/AttributeBox.js'),
                 deathParticle: new IgeTexture('./assets/textures/shapes/DeathParticle.js')
             };

@@ -2,7 +2,9 @@ var EntityContactResolver = IgeEntity
     .extend({
         classId: 'EntityContactResolver',
         componentId: 'contactResolver',
-        init: function () {
+        server:null,
+        init: function (entity) {
+            this.server =  entity;
             var self = this;
             this.begin = function (contact) {
                 console.log("begin", contact);
@@ -14,6 +16,8 @@ var EntityContactResolver = IgeEntity
                     self._playerWallBegin(entityA, entityB, contact);
                 } else if (contact.igeEitherCategory('Wall') && contact.igeEitherCategory('BeamParticle')) {
                     self._beamParticleWallBegin(entityA, entityB, contact);
+                } else if (contact.igeEitherCategory('Player') && contact.igeEitherCategory('Crown')) {
+                    self._playerCrownBegin(entityA, entityB, contact);
                 }
                 else if (entityA._beamType !== undefined && entityB._beamType !== undefined) {
                     self._beamParticleBeamParticleBegin(entityA, entityB, contact);
@@ -38,6 +42,13 @@ var EntityContactResolver = IgeEntity
                     self._beamParticleBeamParticlePreSolver(entityA, entityB, contact);
                 }
             };
+        },
+        _playerCrownBegin: function (entityA, entityB, contact) {
+            var entities = this._separate(entityA, entityB, 'Player');
+            if(entities.other._inPlayer == 'n') {
+                entities.other._inPlayer = entities.primary._playerClass;
+                entities.other.player = entities.primary;
+            }
         },
         _playerBeamParticleBegin: function (entityA, entityB, contact) {
             var entities = this._separate(entityA, entityB, 'Player');

@@ -1,6 +1,10 @@
 var config = {
     include: [
         {
+            name: 'Crown',
+            path: './gameClasses/Crown'
+        },
+        {
             name: 'BeamParticle',
             path: './gameClasses/BeamParticle'
         },

@@ -12,7 +12,7 @@ var PlayerControlComponent = IgeEntity.extend({
             down: false,
             shoot: false
         };
-        this._speed = this._DEFAULT_SPEED = 0.12;
+        this._speed = this._DEFAULT_SPEED = 0.1;
         this._prevVelocityX = this._prevVelocityY = 0;
 
         // Setup the control system.
@@ -98,50 +98,11 @@ var PlayerControlComponent = IgeEntity.extend({
                 return;
             }
             //shooting
-            if (this.playerControl.controls.shoot && this._shoot === 'off' && this._currentMagicPoints >= this._MAX_MAGIC_POINTS) {
-                var x = this.worldPosition().x;
-                var y = this.worldPosition().y;
-                var vx = 0, vy = 0;
-
-                this.applyMagicPointDamage(this._MAX_MAGIC_POINTS+1);
+            if (this.playerControl.controls.shoot && this._currentMagicPoints == this._MAX_MAGIC_POINTS) {
                 this._shoot = 'on';
-                switch (this._facing) {
-                    case 'up':
-                        vy = -1;
-                        break;
-                    case 'down':
-                        vy = 1;
-                        break;
-                    case 'left':
-                        vx = -1;
-                        break;
-                    case 'right':
-                        vx = 1;
-                        break;
-                    case 'upLeft':
-                        vx = -1;
-                        vy = -1;
-                        break;
-                    case 'downLeft':
-                        vx = -1;
-                        vy = 1;
-                        break;
-                    case 'upRight':
-                        vx = 1;
-                        vy = -1;
-                        break;
-                    case 'downRight':
-                        vx = 1;
-                        vy = 1;
-                        break;
-                    default:
-                        return;
-                        break;
-                }
-                ige.server.beamParticleFactory(this._playerClass, this._facing, new IgePoint(x, y, 0), new IgePoint(vx, vy, 0));
-            }
-            else {
+            } else {
                 this._shoot = 'off';
+                this.playerControl.controls.shoot = false;
             }
             //movement
             if (this._canMove) {

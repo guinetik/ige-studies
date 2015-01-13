@@ -1,7 +1,9 @@
 var igeClientConfig = {
   include: [
+      './lib/createjs-2013.12.12.min.js',
       './lib/TexturePackerAtlas.js',
       './gameClasses/BeamParticle.js',
+      './gameClasses/Crown.js',
       './gameClasses/Player.js',
       './gameClasses/ClientNetworkEvents.js',
       './gameClasses/PlayerControlComponent.js',
@@ -9,8 +11,6 @@ var igeClientConfig = {
       './gameClasses/AttributeBox.js',
       './gameClasses/DeathParticle.js',
       './gameClasses/ClientSound.js',
-      // External CDNs
-      'http://code.createjs.com/createjs-2013.12.12.min.js',//'http://code.createjs.com/soundjs-0.5.2.min.js',
       // Standard game scripts.
       './client.js',
       './index.js']
