@@ -1,6 +1,9 @@
 var config = {
     include: [
         {
+            name: 'ClientCountDown',
+            path: './gameClasses/ClientCountDown'
+        }, {
             name: 'Crown',
             path: './gameClasses/Crown'
         },

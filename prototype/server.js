@@ -118,7 +118,7 @@ var Server = IgeClass
             new BeamParticle(type, facing).translateTo(pos.x, pos.y, pos.z).velocity.x(vel.x / 2).velocity.y(vel.y / 2).lifeSpan(3000).mount(this.foregroundScene);
         },
         crownFactory: function (posX, posY, posZ) {
-            new Crown().translateTo(posX, posY, posZ).mount(this.foregroundScene);
+            return new Crown().translateTo(posX, posY, posZ).mount(this.foregroundScene);
         },
         wallFactory: function (id, pos, width, height, scene) {
             return new Wall(id, pos, width, height).mount(scene);

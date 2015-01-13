@@ -3,6 +3,7 @@ var igeClientConfig = {
       './lib/createjs-2013.12.12.min.js',
       './lib/TexturePackerAtlas.js',
       './gameClasses/BeamParticle.js',
+      './gameClasses/ClientCountDown.js',
       './gameClasses/Crown.js',
       './gameClasses/Player.js',
       './gameClasses/ClientNetworkEvents.js',

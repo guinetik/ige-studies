@@ -1,6 +1,7 @@
 var Crown = IgeEntityBox2d.extend({
     classId: 'Crown',
     player: null,
+    countdown: null,
     init: function () {
         var self = this;
         IgeEntityBox2d.prototype.init.call(this);
@@ -33,12 +34,35 @@ var Crown = IgeEntityBox2d.extend({
         this._inPlayer = 'n';
         this.streamSections(['transform', 'inPlayer']);
     },
+    startCrownCountdown: function () {
+        var self = this;
+        this.countdown = new ClientCountDown(this._inPlayer + ' will Win in ', 10, 's', 1000)
+            .translateTo(10, -100, 1000)
+            .mount(ige.client.foregroundScene)
+            .start();
+        this.countdown.on('complete', function () {
+            self.countdown.destroy();
+            self.destroy();
+        });
+    },
+    reset:function() {
+      console.log("CROWN RESET");
+        this._inPlayer = 'n';
+        this.player = null;
+    },
     update: function (ctx) {
         if (!ige.isServer) {
-            if (this._inPlayer == 'n') {
-
+            if (this._inPlayer != 'n') {
+                if (this.countdown == null) {
+                    this.startCrownCountdown();
+                }
             } else {
-
+                if (this.countdown != null) {
+                    this.countdown.stop();
+                    this.countdown.destroy();
+                    this.countdown = null;
+                    this.destroy();
+                }
             }
         }
         if (ige.isServer) {

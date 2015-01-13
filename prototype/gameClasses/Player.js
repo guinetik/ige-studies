@@ -232,6 +232,7 @@ var Player = IgeEntityBox2d
                 if (this._currentHitPoints <= 0) {
                     this._dead = true;
                     this._canChangeSkin = true;
+                    this.texturesInited = false;
                     this._deathParticleEmitter.start();
                     if (this.id() === ige.client.playerEntityId) {
                         //ige.client._loadDiedScreen();
@@ -335,6 +336,11 @@ var Player = IgeEntityBox2d
         },
         destroy: function () {
             this._destroyUi();
+            if(ige.isServer) {
+                if(ige.server.crown._inPlayer == this._playerClass) {
+                    ige.server.crown.reset();
+                }
+            }
             IgeEntityBox2d.prototype.destroy.call(this);
         },
         _updateUiPositions: function () {
